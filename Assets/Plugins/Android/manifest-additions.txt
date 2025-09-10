@@ -1,0 +1,8 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <application>
+        <!-- Unity will merge classes.dex; ensure packaging options in Gradle template if needed -->
+    </application>
+</manifest>
+
