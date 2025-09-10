@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System;
 using UnityEngine.XR.ARFoundation;
 using Unity.XR.CoreUtils;
-using UnityEditor;
-using UnityEditor.Build;
 
 namespace ARLinguaSphere.Core
 {
@@ -334,30 +332,9 @@ namespace ARLinguaSphere.Core
                 }
             }
             
-            // Check Project Settings
-            if (PlayerSettings.Android.targetSdkVersion == AndroidSdkVersions.AndroidApiLevelAuto)
-            {
-                PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevel34;
-                appliedFixes.Add("Set Android Target SDK Version to 34");
-            }
-            
-            if (PlayerSettings.Android.minSdkVersion < AndroidSdkVersions.AndroidApiLevel29)
-            {
-                PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel29;
-                appliedFixes.Add("Set Android Minimum SDK Version to 29");
-            }
-            
-            if (PlayerSettings.GetScriptingBackend(NamedBuildTarget.Android) != ScriptingImplementation.IL2CPP)
-            {
-                PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
-                appliedFixes.Add("Set Android Scripting Backend to IL2CPP");
-            }
-            
-            if (PlayerSettings.Android.targetArchitectures != AndroidArchitecture.ARM64)
-            {
-                PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
-                appliedFixes.Add("Set Android Target Architecture to ARM64");
-            }
+            // Note: Project Settings modification is not available in runtime
+            // These settings should be configured in the Unity Editor
+            appliedFixes.Add("Project Settings validation requires editor scripts - configure Android settings in Unity Editor");
             
             yield return null;
         }

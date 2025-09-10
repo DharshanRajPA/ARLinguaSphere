@@ -1,12 +1,10 @@
 using UnityEngine;
-using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
 using System;
 using System.Reflection;
 using UnityEngine.XR.ARFoundation;
 using Unity.XR.CoreUtils;
-using UnityEditor.Build;
 
 namespace ARLinguaSphere.Core
 {
@@ -370,30 +368,9 @@ namespace ARLinguaSphere.Core
                 fixesApplied.Add("Fixed AndroidManifest.xml");
             }
             
-            // Fix Project Settings
-            if (PlayerSettings.Android.targetSdkVersion == AndroidSdkVersions.AndroidApiLevelAuto)
-            {
-                PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevel34;
-                fixesApplied.Add("Set Android Target SDK Version to 34");
-            }
-            
-            if (PlayerSettings.Android.minSdkVersion < AndroidSdkVersions.AndroidApiLevel29)
-            {
-                PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel29;
-                fixesApplied.Add("Set Android Minimum SDK Version to 29");
-            }
-            
-            if (PlayerSettings.GetScriptingBackend(NamedBuildTarget.Android) != ScriptingImplementation.IL2CPP)
-            {
-                PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
-                fixesApplied.Add("Set Android Scripting Backend to IL2CPP");
-            }
-            
-            if (PlayerSettings.Android.targetArchitectures != AndroidArchitecture.ARM64)
-            {
-                PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
-                fixesApplied.Add("Set Android Target Architecture to ARM64");
-            }
+            // Note: Project Settings modification is not available in runtime
+            // These settings should be configured in the Unity Editor
+            fixesApplied.Add("Project Settings validation requires editor scripts - configure Android settings in Unity Editor");
             
             yield return null;
         }

@@ -214,9 +214,10 @@ namespace ARLinguaSphere.Core
         {
             try
             {
-                var packageInfo = UnityEditor.PackageManager.PackageInfo.FindForAssembly(
-                    System.Reflection.Assembly.Load(packageName));
-                return packageInfo != null;
+                // Package info checking is not available in runtime
+                // This should be done in editor scripts
+                var assembly = System.Reflection.Assembly.Load(packageName);
+                return assembly != null;
             }
             catch
             {

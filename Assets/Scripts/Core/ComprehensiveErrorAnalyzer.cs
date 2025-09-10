@@ -1,12 +1,10 @@
 using UnityEngine;
-using UnityEditor;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System;
 using UnityEngine.XR.ARFoundation;
 using Unity.XR.CoreUtils;
-using UnityEditor.Build;
 
 namespace ARLinguaSphere.Core
 {
@@ -333,26 +331,9 @@ namespace ARLinguaSphere.Core
                 }
             }
             
-            // Check Project Settings
-            if (PlayerSettings.Android.targetSdkVersion == AndroidSdkVersions.AndroidApiLevelAuto)
-            {
-                androidIssues.Add("Android Target SDK Version is set to Auto - should be specific version");
-            }
-            
-            if (PlayerSettings.Android.minSdkVersion < AndroidSdkVersions.AndroidApiLevel29)
-            {
-                androidIssues.Add("Android Minimum SDK Version is too low for ARCore - should be 29 or higher");
-            }
-            
-            if (PlayerSettings.GetScriptingBackend(NamedBuildTarget.Android) != ScriptingImplementation.IL2CPP)
-            {
-                androidIssues.Add("Android Scripting Backend should be IL2CPP for better performance");
-            }
-            
-            if (PlayerSettings.Android.targetArchitectures != AndroidArchitecture.ARM64)
-            {
-                androidIssues.Add("Android Target Architecture should be ARM64 for better performance");
-            }
+            // Note: Project Settings validation is not available in runtime
+            // These checks should be performed in editor scripts
+            androidIssues.Add("Project Settings validation requires editor scripts - check Android settings manually");
             
             yield return null;
         }
