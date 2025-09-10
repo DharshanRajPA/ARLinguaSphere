@@ -23,7 +23,7 @@
 - **Voice**: Android SpeechRecognizer + TTS
 - **Backend**: Firebase (Auth, Realtime DB, Analytics, Crashlytics)
 - **Database**: SQLite (local), Firebase Firestore (cloud)
-- **CI/CD**: GitHub Actions
+ 
 - **Translation**: Google Cloud Translate + GPT-4 fallback
 
 ## 📋 Prerequisites
@@ -76,7 +76,7 @@
     offline_dictionary.json
   /Scenes
     MainARScene.unity
-/BuildScripts        # CI/CD build scripts
+/BuildScripts        # Local build utilities
 /Documentation       # Architecture and API docs
 /Tests              # Unit and integration tests
 ```
@@ -161,7 +161,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [x] Sprint 2: Gesture & Voice
 - [x] Sprint 3: Multi-user & Sync
 - [x] Sprint 4: Analytics & Adaptive Quiz
-- [x] Sprint 5: Polish, testing & CI
+- [x] Sprint 5: Polish & testing
 
 ## ✅ Implementation Status
 
@@ -176,17 +176,15 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - ✅ **Cross-platform**: Unity 2022 LTS with AR Foundation
 
 ### Development Infrastructure (100% Complete)
-- ✅ **CI/CD Pipeline**: GitHub Actions with automated builds
 - ✅ **Testing Framework**: Unit, integration, and performance tests
 - ✅ **Code Quality**: Automated linting, formatting, and security scans
 - ✅ **Documentation**: Complete API specs, deployment guides, and architecture docs
-- ✅ **Environment Configuration**: Secure secrets management and multi-environment support
+- ✅ **Environment Configuration**: Sample environment and local build guidance
 
 ### Production Readiness (100% Complete)
-- ✅ **Build System**: Automated Android APK/AAB generation
-- ✅ **Deployment**: Firebase App Distribution and Google Play Store integration
+- ✅ **Local Build System**: Build & Run directly from Unity to Android
 - ✅ **Monitoring**: Firebase Analytics, Crashlytics, and Performance Monitoring
-- ✅ **Security**: API key management, data encryption, and privacy compliance
+- ✅ **Security**: API key management guidance, data encryption, and privacy considerations
 
 ## 📞 Support
 
@@ -198,3 +196,5 @@ For support, email support@arlinguasphere.com or join our Discord community.
 - Google for ARCore and TensorFlow Lite
 - MediaPipe team for hand gesture recognition
 - Firebase team for backend services
+
+
