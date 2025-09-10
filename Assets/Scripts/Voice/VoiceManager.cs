@@ -23,6 +23,7 @@ namespace ARLinguaSphere.Voice
         private bool isInitialized = false;
         private bool isListening = false;
         private bool isSpeaking = false;
+        private AndroidSpeechBridge androidBridge;
         
         // Events
         public event Action<string> OnSpeechRecognized;
@@ -36,11 +37,8 @@ namespace ARLinguaSphere.Voice
         {
             Debug.Log("VoiceManager: Initializing voice systems...");
             
-            // Initialize Android speech recognition
-            InitializeAndroidSpeechRecognition();
-            
-            // Initialize Android TTS
-            InitializeAndroidTTS();
+            // Initialize Android bridge (no-op in editor/non-Android)
+            androidBridge = new AndroidSpeechBridge();
             
             isInitialized = true;
             Debug.Log("VoiceManager: Voice systems initialized!");
@@ -68,11 +66,13 @@ namespace ARLinguaSphere.Voice
             isListening = true;
             OnSpeechStarted?.Invoke();
             
-            // TODO: Start Android SpeechRecognizer
+            androidBridge?.StartListening(defaultLanguage);
             Debug.Log("VoiceManager: Started listening for speech...");
             
-            // Simulate speech recognition for testing
+            #if UNITY_EDITOR
+            // Simulate speech recognition for testing in Editor
             StartCoroutine(SimulateSpeechRecognition());
+            #endif
         }
         
         public void StopListening()
@@ -82,7 +82,7 @@ namespace ARLinguaSphere.Voice
             isListening = false;
             OnSpeechEnded?.Invoke();
             
-            // TODO: Stop Android SpeechRecognizer
+            androidBridge?.StopListening();
             Debug.Log("VoiceManager: Stopped listening for speech");
         }
         
@@ -131,11 +131,13 @@ namespace ARLinguaSphere.Voice
             isSpeaking = true;
             OnTTSStarted?.Invoke();
             
-            // TODO: Use Android TTS to speak text
+            androidBridge?.Speak(text, language, speechRate, speechPitch, speechVolume);
             Debug.Log($"VoiceManager: Speaking: '{text}' in {language}");
             
-            // Simulate TTS duration
+            #if UNITY_EDITOR
+            // Simulate TTS duration in Editor
             StartCoroutine(SimulateTTS(text));
+            #endif
         }
         
         private IEnumerator SimulateTTS(string text)
