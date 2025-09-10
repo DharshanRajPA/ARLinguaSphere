@@ -1,0 +1,38 @@
+{
+  "apple": {
+    "en": "apple",
+    "es": "manzana",
+    "fr": "pomme",
+    "de": "apfel",
+    "it": "mela",
+    "pt": "maçã",
+    "zh": "苹果",
+    "ja": "りんご",
+    "ko": "사과",
+    "hi": "सेब"
+  },
+  "book": {
+    "en": "book",
+    "es": "libro",
+    "fr": "livre",
+    "de": "buch",
+    "it": "libro",
+    "pt": "livro",
+    "zh": "书",
+    "ja": "本",
+    "ko": "책",
+    "hi": "किताब"
+  },
+  "car": {
+    "en": "car",
+    "es": "coche",
+    "fr": "voiture",
+    "de": "auto",
+    "it": "macchina",
+    "pt": "carro",
+    "zh": "汽车",
+    "ja": "車",
+    "ko": "자동차",
+    "hi": "कार"
+  }
+}
