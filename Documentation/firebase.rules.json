@@ -1,0 +1,14 @@
+{
+	"rules": {
+		"rooms": {
+			"$roomId": {
+				"anchors": {
+					"$anchorId": {
+						".read": true,
+						".write": true
+					}
+				}
+			}
+		}
+	}
+}
