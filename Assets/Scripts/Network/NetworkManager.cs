@@ -24,6 +24,7 @@ namespace ARLinguaSphere.Network
         private bool isConnected = false;
         private bool isInRoom = false;
         private Coroutine syncCoroutine;
+        private FirebaseService firebase;
         
         // Events
         public event Action OnConnected;
@@ -46,8 +47,15 @@ namespace ARLinguaSphere.Network
         
         private void InitializeBackend()
         {
-            // TODO: Initialize Firebase Realtime Database or other backend
-            Debug.Log("NetworkManager: Backend initialized (placeholder)");
+            // Initialize Firebase service placeholder
+            firebase = FindObjectOfType<FirebaseService>();
+            if (firebase == null)
+            {
+                var go = new GameObject("FirebaseService");
+                firebase = go.AddComponent<FirebaseService>();
+            }
+            firebase.Initialize();
+            Debug.Log("NetworkManager: Backend initialized (Firebase placeholder)");
         }
         
         public void Connect()
@@ -183,7 +191,14 @@ namespace ARLinguaSphere.Network
                 return;
             }
             
-            // TODO: Send anchor data to Firebase
+            // Send anchor data to Firebase
+            firebase?.SetRoomAnchor(currentRoomId, anchorData, success =>
+            {
+                if (!success)
+                {
+                    OnNetworkError?.Invoke("Failed to sync anchor");
+                }
+            });
             Debug.Log($"NetworkManager: Sending anchor '{anchorData.id}' to room '{currentRoomId}'");
         }
         
@@ -220,9 +235,18 @@ namespace ARLinguaSphere.Network
         
         private IEnumerator SyncLoop()
         {
+            // Attach listener once when entering room
+            if (firebase != null && !string.IsNullOrEmpty(currentRoomId))
+            {
+                firebase.ListenRoomAnchors(currentRoomId, (anchor) =>
+                {
+                    OnAnchorReceived?.Invoke(anchor);
+                });
+            }
+            
             while (isInRoom)
             {
-                // TODO: Sync with Firebase
+                // Placeholder: periodic heartbeat
                 yield return new WaitForSeconds(syncInterval);
             }
         }
