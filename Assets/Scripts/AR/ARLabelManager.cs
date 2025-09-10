@@ -31,6 +31,7 @@ namespace ARLinguaSphere.AR
         private ARManager arManager;
         private MLManager mlManager;
         private LanguageManager languageManager;
+        private ARLinguaSphere.Network.NetworkManager networkManager;
         private Camera arCamera;
         
         private List<ARLabel> activeLabels = new List<ARLabel>();
@@ -42,11 +43,12 @@ namespace ARLinguaSphere.AR
         public System.Action<ARLabel> OnLabelRemoved;
         public System.Action<ARLabel> OnLabelClicked;
         
-        public void Initialize(ARManager arMgr, MLManager mlMgr, LanguageManager langMgr)
+        public void Initialize(ARManager arMgr, MLManager mlMgr, LanguageManager langMgr, ARLinguaSphere.Network.NetworkManager netMgr = null)
         {
             arManager = arMgr;
             mlManager = mlMgr;
             languageManager = langMgr;
+            networkManager = netMgr;
             
             // Get AR camera reference
             arCamera = arManager.ARCamera;
@@ -181,6 +183,19 @@ namespace ARLinguaSphere.AR
             
             // Notify listeners
             OnLabelPlaced?.Invoke(label);
+            
+            // Sync to multiplayer room if available
+            if (networkManager != null && networkManager.IsConnected && networkManager.IsInRoom)
+            {
+                var anchorData = new ARLinguaSphere.Network.AnchorData
+                {
+                    position = worldPosition,
+                    rotation = Quaternion.LookRotation(arCamera.transform.forward),
+                    labelKey = detection.label,
+                    creatorId = SystemInfo.deviceUniqueIdentifier
+                };
+                networkManager.SendAnchor(anchorData);
+            }
             
             Debug.Log($"ARLabelManager: Placed label '{translatedText}' at {worldPosition}");
         }

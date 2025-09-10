@@ -26,6 +26,7 @@ namespace ARLinguaSphere.Core
         public UIManager uiManager;
         public NetworkManager networkManager;
         public AnalyticsManager analyticsManager;
+        public ARLinguaSphere.Analytics.QuizEngine quizEngine;
         public ARLabelManager labelManager;
         
         [Header("AR Camera")]
@@ -88,6 +89,9 @@ namespace ARLinguaSphere.Core
             // Initialize analytics
             InitializeAnalytics();
             
+            // Initialize quiz engine
+            InitializeQuizEngine();
+            
             // Connect all systems
             ConnectSystems();
             
@@ -148,7 +152,7 @@ namespace ARLinguaSphere.Core
                     labelManager = labelObj.AddComponent<ARLabelManager>();
                 }
             }
-            labelManager.Initialize(arManager, mlManager, languageManager);
+            labelManager.Initialize(arManager, mlManager, languageManager, networkManager);
             
             // Get AR Camera reference
             if (arCamera == null)
@@ -245,6 +249,20 @@ namespace ARLinguaSphere.Core
                 // Analytics is already initialized in InitializeCoreSystems
                 Debug.Log("ARLinguaSphereController: Analytics enabled");
             }
+        }
+        
+        private void InitializeQuizEngine()
+        {
+            if (quizEngine == null)
+            {
+                quizEngine = FindObjectOfType<ARLinguaSphere.Analytics.QuizEngine>();
+                if (quizEngine == null)
+                {
+                    var quizObj = new GameObject("QuizEngine");
+                    quizEngine = quizObj.AddComponent<ARLinguaSphere.Analytics.QuizEngine>();
+                }
+            }
+            quizEngine.Initialize(analyticsManager);
         }
         
         private void ConnectSystems()
@@ -499,6 +517,26 @@ namespace ARLinguaSphere.Core
                 isARSessionActive = true;
                 OnARSessionStarted?.Invoke();
                 Debug.Log("ARLinguaSphereController: AR session started");
+                
+                // Connect and auto-join a room for demo
+                if (enableMultiplayer && networkManager != null)
+                {
+                    networkManager.Connect();
+                    StartCoroutine(JoinRoomAfterConnect());
+                }
+            }
+        }
+        
+        private System.Collections.IEnumerator JoinRoomAfterConnect()
+        {
+            float start = Time.time;
+            while (networkManager != null && !networkManager.IsConnected && Time.time - start < 5f)
+            {
+                yield return null;
+            }
+            if (networkManager != null && networkManager.IsConnected)
+            {
+                networkManager.CreateRoom();
             }
         }
         
