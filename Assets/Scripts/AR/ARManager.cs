@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
+using UnityEngine.XR;
+using Unity.XR.CoreUtils;
 using System.Collections.Generic;
 using Unity.Collections;
 
@@ -13,7 +15,7 @@ namespace ARLinguaSphere.AR
     {
         [Header("AR Components")]
         public ARSession arSession;
-        public ARSessionOrigin arSessionOrigin; // Unity 6 warns: prefer XROrigin; keep for now
+        public XROrigin xrOrigin; // Updated to use XROrigin instead of deprecated ARSessionOrigin
         public ARCameraManager arCameraManager;
         public ARPlaneManager arPlaneManager;
         public ARRaycastManager arRaycastManager;
@@ -41,7 +43,7 @@ namespace ARLinguaSphere.AR
             Debug.Log("ARManager: Initializing AR systems...");
             
             // Get AR camera reference
-            arCamera = arSessionOrigin.camera;
+            arCamera = xrOrigin.Camera;
             
             // (Unity 6) Skip session configuration via subsystem.GetConfiguration (removed)
             

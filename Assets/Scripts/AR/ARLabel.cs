@@ -52,7 +52,7 @@ namespace ARLinguaSphere.AR
             arCamera = Camera.main;
             if (arCamera == null)
             {
-                arCamera = FindObjectOfType<Camera>();
+                arCamera = FindFirstObjectByType<Camera>();
             }
             
             // Store original scale

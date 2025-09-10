@@ -48,7 +48,7 @@ namespace ARLinguaSphere.Network
         private void InitializeBackend()
         {
             // Initialize Firebase service placeholder
-            firebase = FindObjectOfType<FirebaseService>();
+            firebase = FindFirstObjectByType<FirebaseService>();
             if (firebase == null)
             {
                 var go = new GameObject("FirebaseService");

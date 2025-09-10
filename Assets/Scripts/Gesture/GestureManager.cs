@@ -49,7 +49,7 @@ namespace ARLinguaSphere.Gesture
         {
             if (!enableHandGestures) return;
             
-            var handsComponent = GameObject.FindObjectOfType<MediaPipeHands>();
+            var handsComponent = GameObject.FindFirstObjectByType<MediaPipeHands>();
             if (handsComponent == null)
             {
                 var go = new GameObject("MediaPipeHands");

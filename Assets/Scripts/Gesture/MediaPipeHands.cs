@@ -52,7 +52,7 @@ namespace ARLinguaSphere.Gesture
             arCamera = Camera.main;
             if (arCamera == null)
             {
-                arCamera = FindObjectOfType<Camera>();
+                arCamera = FindFirstObjectByType<Camera>();
             }
             
 #if UNITY_ANDROID && !UNITY_EDITOR

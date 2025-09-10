@@ -122,7 +122,7 @@ namespace ARLinguaSphere.UI
         private void SubscribeToEvents()
         {
             // Subscribe to game events
-            var gameManager = FindObjectOfType<Core.GameManager>();
+            var gameManager = FindFirstObjectByType<Core.GameManager>();
             if (gameManager != null)
             {
                 // Subscribe to language changes

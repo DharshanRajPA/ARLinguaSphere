@@ -50,7 +50,7 @@ namespace ARLinguaSphere.Core
         private void Awake()
         {
             // Ensure this is a singleton
-            if (FindObjectsOfType<ARLinguaSphereController>().Length > 1)
+            if (FindObjectsByType<ARLinguaSphereController>(FindObjectsSortMode.None).Length > 1)
             {
                 Destroy(gameObject);
                 return;
@@ -106,7 +106,7 @@ namespace ARLinguaSphere.Core
             // Initialize Language Manager
             if (languageManager == null)
             {
-                languageManager = FindObjectOfType<LanguageManager>();
+                languageManager = FindFirstObjectByType<LanguageManager>();
                 if (languageManager == null)
                 {
                     var langObj = new GameObject("LanguageManager");
@@ -118,7 +118,7 @@ namespace ARLinguaSphere.Core
             // Initialize Analytics Manager
             if (analyticsManager == null)
             {
-                analyticsManager = FindObjectOfType<AnalyticsManager>();
+                analyticsManager = FindFirstObjectByType<AnalyticsManager>();
                 if (analyticsManager == null)
                 {
                     var analyticsObj = new GameObject("AnalyticsManager");
@@ -133,7 +133,7 @@ namespace ARLinguaSphere.Core
             // Initialize AR Manager
             if (arManager == null)
             {
-                arManager = FindObjectOfType<ARManager>();
+                arManager = FindFirstObjectByType<ARManager>();
                 if (arManager == null)
                 {
                     var arObj = new GameObject("ARManager");
@@ -145,7 +145,7 @@ namespace ARLinguaSphere.Core
             // Initialize AR Label Manager
             if (labelManager == null)
             {
-                labelManager = FindObjectOfType<ARLabelManager>();
+                labelManager = FindFirstObjectByType<ARLabelManager>();
                 if (labelManager == null)
                 {
                     var labelObj = new GameObject("ARLabelManager");
@@ -166,7 +166,7 @@ namespace ARLinguaSphere.Core
             // Initialize ML Manager
             if (mlManager == null)
             {
-                mlManager = FindObjectOfType<MLManager>();
+                mlManager = FindFirstObjectByType<MLManager>();
                 if (mlManager == null)
                 {
                     var mlObj = new GameObject("MLManager");
@@ -181,7 +181,7 @@ namespace ARLinguaSphere.Core
             // Initialize UI Manager
             if (uiManager == null)
             {
-                uiManager = FindObjectOfType<UIManager>();
+                uiManager = FindFirstObjectByType<UIManager>();
                 if (uiManager == null)
                 {
                     var uiObj = new GameObject("UIManager");
@@ -196,7 +196,7 @@ namespace ARLinguaSphere.Core
             // Initialize Gesture Manager
             if (gestureManager == null && enableGestureControls)
             {
-                gestureManager = FindObjectOfType<GestureManager>();
+                gestureManager = FindFirstObjectByType<GestureManager>();
                 if (gestureManager == null)
                 {
                     var gestureObj = new GameObject("GestureManager");
@@ -211,7 +211,7 @@ namespace ARLinguaSphere.Core
             // Initialize Voice Manager
             if (voiceManager == null && enableVoiceCommands)
             {
-                voiceManager = FindObjectOfType<VoiceManager>();
+                voiceManager = FindFirstObjectByType<VoiceManager>();
                 if (voiceManager == null)
                 {
                     var voiceObj = new GameObject("VoiceManager");
@@ -229,7 +229,7 @@ namespace ARLinguaSphere.Core
             // Initialize Network Manager
             if (networkManager == null && enableMultiplayer)
             {
-                networkManager = FindObjectOfType<NetworkManager>();
+                networkManager = FindFirstObjectByType<NetworkManager>();
                 if (networkManager == null)
                 {
                     var networkObj = new GameObject("NetworkManager");
@@ -255,7 +255,7 @@ namespace ARLinguaSphere.Core
         {
             if (quizEngine == null)
             {
-                quizEngine = FindObjectOfType<ARLinguaSphere.Analytics.QuizEngine>();
+                quizEngine = FindFirstObjectByType<ARLinguaSphere.Analytics.QuizEngine>();
                 if (quizEngine == null)
                 {
                     var quizObj = new GameObject("QuizEngine");

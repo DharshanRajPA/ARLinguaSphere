@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
+using Unity.XR.CoreUtils;
 using ARLinguaSphere.AR;
 using ARLinguaSphere.ML;
 using ARLinguaSphere.Core;
@@ -65,7 +66,7 @@ namespace ARLinguaSphere.Core
         private void CreateMainController()
         {
             // Find or create the main controller
-            controller = FindObjectOfType<ARLinguaSphereController>();
+            controller = FindFirstObjectByType<ARLinguaSphereController>();
             if (controller == null)
             {
                 var controllerObj = new GameObject("ARLinguaSphereController");
@@ -86,15 +87,15 @@ namespace ARLinguaSphere.Core
             var arSessionObj = new GameObject("AR Session");
             var arSession = arSessionObj.AddComponent<ARSession>();
             
-            // Create AR Session Origin
-            var arSessionOriginObj = new GameObject("AR Session Origin");
-            var arSessionOrigin = arSessionOriginObj.AddComponent<ARSessionOrigin>();
-            arSessionOriginObj.transform.SetParent(arSessionObj.transform);
+            // Create XR Origin (replaces deprecated ARSessionOrigin)
+            var xrOriginObj = new GameObject("XR Origin");
+            var xrOrigin = xrOriginObj.AddComponent<Unity.XR.CoreUtils.XROrigin>();
+            xrOriginObj.transform.SetParent(arSessionObj.transform);
             
             // Create AR Camera
             var arCameraObj = new GameObject("AR Camera");
             var arCamera = arCameraObj.AddComponent<Camera>();
-            arCameraObj.transform.SetParent(arSessionOriginObj.transform);
+            arCameraObj.transform.SetParent(xrOriginObj.transform);
             arCameraObj.transform.localPosition = Vector3.zero;
             arCameraObj.transform.localRotation = Quaternion.identity;
             
@@ -102,19 +103,19 @@ namespace ARLinguaSphere.Core
             var arCameraManager = arCameraObj.AddComponent<ARCameraManager>();
             
             // Add AR Plane Manager
-            var arPlaneManager = arSessionOriginObj.AddComponent<ARPlaneManager>();
+            var arPlaneManager = xrOriginObj.AddComponent<ARPlaneManager>();
             
             // Add AR Raycast Manager
-            var arRaycastManager = arSessionOriginObj.AddComponent<ARRaycastManager>();
+            var arRaycastManager = xrOriginObj.AddComponent<ARRaycastManager>();
             
             // Add AR Anchor Manager
-            var arAnchorManager = arSessionOriginObj.AddComponent<ARAnchorManager>();
+            var arAnchorManager = xrOriginObj.AddComponent<ARAnchorManager>();
             
             // Create AR Manager
             var arManagerObj = new GameObject("ARManager");
             var arManager = arManagerObj.AddComponent<ARManager>();
             arManager.arSession = arSession;
-            arManager.arSessionOrigin = arSessionOrigin;
+            arManager.xrOrigin = xrOrigin;
             arManager.arCameraManager = arCameraManager;
             arManager.arPlaneManager = arPlaneManager;
             arManager.arRaycastManager = arRaycastManager;
@@ -199,7 +200,7 @@ namespace ARLinguaSphere.Core
             langTextRect.offsetMax = Vector2.zero;
             
             // Assign to UI Manager
-            var uiManager = FindObjectOfType<UIManager>();
+            var uiManager = FindFirstObjectByType<UIManager>();
             if (uiManager != null)
             {
                 uiManager.statusText = statusText;
@@ -278,7 +279,7 @@ namespace ARLinguaSphere.Core
             }
             
             // Clear all labels
-            var labelManager = FindObjectOfType<ARLabelManager>();
+            var labelManager = FindFirstObjectByType<ARLabelManager>();
             if (labelManager != null)
             {
                 labelManager.RemoveAllLabels();
@@ -291,7 +292,7 @@ namespace ARLinguaSphere.Core
         [ContextMenu("Test Object Detection")]
         public void TestObjectDetection()
         {
-            var labelManager = FindObjectOfType<ARLabelManager>();
+            var labelManager = FindFirstObjectByType<ARLabelManager>();
             if (labelManager != null)
             {
                 // Place a test label
