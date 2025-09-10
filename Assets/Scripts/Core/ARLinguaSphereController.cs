@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
+using Unity.XR.CoreUtils;
 using ARLinguaSphere.AR;
 using ARLinguaSphere.ML;
 using ARLinguaSphere.Core;
@@ -140,6 +141,22 @@ namespace ARLinguaSphere.Core
                     arManager = arObj.AddComponent<ARManager>();
                 }
             }
+            
+            // Ensure AR Manager has required components before initializing
+            if (arManager.xrOrigin == null)
+            {
+                var xrOrigin = FindFirstObjectByType<XROrigin>();
+                if (xrOrigin != null)
+                {
+                    arManager.xrOrigin = xrOrigin;
+                }
+                else
+                {
+                    Debug.LogError("ARLinguaSphereController: No XROrigin found! AR will not work.");
+                    return;
+                }
+            }
+            
             arManager.Initialize();
             
             // Initialize AR Label Manager

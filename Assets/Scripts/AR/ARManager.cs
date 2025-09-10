@@ -42,8 +42,21 @@ namespace ARLinguaSphere.AR
         {
             Debug.Log("ARManager: Initializing AR systems...");
             
+            // Validate required components
+            if (xrOrigin == null)
+            {
+                Debug.LogError("ARManager: XROrigin is null! Cannot initialize AR systems.");
+                return;
+            }
+            
             // Get AR camera reference
             arCamera = xrOrigin.Camera;
+            
+            if (arCamera == null)
+            {
+                Debug.LogError("ARManager: AR Camera is null! Cannot initialize AR systems.");
+                return;
+            }
             
             // (Unity 6) Skip session configuration via subsystem.GetConfiguration (removed)
             

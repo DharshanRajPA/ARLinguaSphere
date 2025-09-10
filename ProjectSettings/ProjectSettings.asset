@@ -143,12 +143,14 @@ PlayerSettings:
   tvOSBundleVersion: 1.0
   bundleVersion: 1.0
   preloadedAssets:
-  - {fileID: 4800000, guid: c9f956787b1d945e7b36e0516201fc76, type: 3}
-  - {fileID: 4800000, guid: 0945859e5a1034c2cb6dce53cb4fb899, type: 3}
-  - {fileID: 11400000, guid: e5c1c140c49fa84468bf1150e972b9cb, type: 2}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   - {fileID: 11400000, guid: 378a65a527f53ef48a6a179f5318c27b, type: 2}
-  - {fileID: 4497750715450328170, guid: 6c44ef34ee63146469ee69112c2da7b2, type: 2}
-  - {fileID: 8954154613750630464, guid: e8f40ee73bc1ff040a0379f25398a2c0, type: 2}
+  - {fileID: -2120189925797013937, guid: e8f40ee73bc1ff040a0379f25398a2c0, type: 2}
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -179,7 +181,7 @@ PlayerSettings:
   overrideDefaultApplicationIdentifier: 1
   AndroidBundleVersionCode: 1
   AndroidMinSdkVersion: 29
-  AndroidTargetSdkVersion: 0
+  AndroidTargetSdkVersion: 34
   AndroidPreferredInstallLocation: 1
   aotOptions: 
   stripEngineCode: 1
