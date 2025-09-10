@@ -25,6 +25,11 @@ namespace ARLinguaSphere.Gesture
         private bool isPinching = false;
         private float pinchStartDistance;
         
+        // Hand tracking
+        private IMediaPipeHands hands;
+        private float lastHandGestureTime;
+        public float handGestureCooldown = 0.8f;
+        
         // Events
         public event Action<GestureType, Vector2> OnGestureDetected;
         public event Action<GestureType, float> OnGestureHeld;
@@ -42,8 +47,19 @@ namespace ARLinguaSphere.Gesture
         
         private void InitializeHandGestureRecognition()
         {
-            // TODO: Initialize MediaPipe Hands or equivalent
-            Debug.Log("GestureManager: Hand gesture recognition initialized (placeholder)");
+            if (!enableHandGestures) return;
+            
+            var handsComponent = GameObject.FindObjectOfType<MediaPipeHands>();
+            if (handsComponent == null)
+            {
+                var go = new GameObject("MediaPipeHands");
+                handsComponent = go.AddComponent<MediaPipeHands>();
+            }
+            hands = handsComponent;
+            hands.Initialize(1, true);
+            hands.OnHandLandmarks += OnHandLandmarks;
+            
+            Debug.Log("GestureManager: Hand gesture recognition initialized");
         }
         
         private void Update()
@@ -51,7 +67,7 @@ namespace ARLinguaSphere.Gesture
             if (!isInitialized) return;
             
             HandleTouchInput();
-            HandleHandGestures();
+            // Hand gestures are event-driven via OnHandLandmarks
         }
         
         private void HandleTouchInput()
@@ -158,12 +174,36 @@ namespace ARLinguaSphere.Gesture
             }
         }
         
-        private void HandleHandGestures()
+        private void OnHandLandmarks(HandLandmarks landmarks)
         {
             if (!enableHandGestures) return;
+            if (Time.time - lastHandGestureTime < handGestureCooldown) return;
+            if (landmarks == null || landmarks.keypoints == null || landmarks.keypoints.Length == 0) return;
             
-            // TODO: Implement MediaPipe Hands gesture recognition
-            // This would detect hand landmarks and classify gestures
+            var gesture = ClassifyHandGesture(landmarks);
+            if (gesture.HasValue)
+            {
+                lastHandGestureTime = Time.time;
+                OnGestureDetected?.Invoke(gesture.Value, new Vector2(Screen.width * 0.5f, Screen.height * 0.5f));
+            }
+        }
+        
+        private GestureType? ClassifyHandGesture(HandLandmarks landmarks)
+        {
+            // NOTE: This is a naive heuristic placeholder. Replace with a trained classifier.
+            // Use confidence as a proxy to toggle between gestures for demo.
+            if (landmarks.confidence > 0.85f)
+            {
+                return GestureType.ThumbsUp;
+            }
+            
+            // If lower confidence, treat as open palm
+            if (landmarks.confidence > 0.6f)
+            {
+                return GestureType.OpenPalm;
+            }
+            
+            return null;
         }
         
         public void SetGestureEnabled(GestureType gestureType, bool enabled)
