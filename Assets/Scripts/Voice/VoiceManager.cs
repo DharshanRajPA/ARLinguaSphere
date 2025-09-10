@@ -38,7 +38,12 @@ namespace ARLinguaSphere.Voice
             Debug.Log("VoiceManager: Initializing voice systems...");
             
             // Initialize Android bridge (no-op in editor/non-Android)
-            androidBridge = new AndroidSpeechBridge();
+            // Create callback receiver object
+            var cbObj = new GameObject("SpeechCallbackReceiver");
+            var receiver = cbObj.AddComponent<SpeechCallbackReceiver>();
+            receiver.voiceManager = this;
+            DontDestroyOnLoad(cbObj);
+            androidBridge = new AndroidSpeechBridge(cbObj.name);
             
             isInitialized = true;
             Debug.Log("VoiceManager: Voice systems initialized!");

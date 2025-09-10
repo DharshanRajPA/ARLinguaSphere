@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using ARLinguaSphere.Core.ThirdParty;
 
 namespace ARLinguaSphere.Core
 {
@@ -16,7 +17,7 @@ namespace ARLinguaSphere.Core
         public bool enableOnlineTranslation = true;
         
         [Header("Dictionary Settings")]
-        public string dictionaryPath = "offline_dictionary.json";
+        public string dictionaryPath = "offline_dictionary";
         
         private Dictionary<string, Dictionary<string, string>> offlineDictionary;
         private bool isInitialized = false;
@@ -33,6 +34,7 @@ namespace ARLinguaSphere.Core
             isInitialized = true;
             
             Debug.Log("LanguageManager: Language systems initialized!");
+            LoadOfflineDictionary();
         }
         
         public void LoadOfflineDictionary()
@@ -43,8 +45,28 @@ namespace ARLinguaSphere.Core
                 if (dictionaryAsset != null)
                 {
                     string jsonContent = dictionaryAsset.text;
-                    offlineDictionary = JsonUtility.FromJson<DictionaryWrapper>(jsonContent).ToDictionary();
-                    Debug.Log($"LanguageManager: Loaded offline dictionary with {offlineDictionary.Count} entries");
+                    var parsed = MiniJSON.Deserialize(jsonContent) as Dictionary<string, object>;
+                    if (parsed == null)
+                    {
+                        Debug.LogError("LanguageManager: Failed to parse offline dictionary JSON");
+                    }
+                    else
+                    {
+                        var dict = new Dictionary<string, Dictionary<string, string>>();
+                        foreach (var kvp in parsed)
+                        {
+                            var inner = kvp.Value as Dictionary<string, object>;
+                            if (inner == null) continue;
+                            var innerDict = new Dictionary<string, string>();
+                            foreach (var langKvp in inner)
+                            {
+                                innerDict[langKvp.Key] = langKvp.Value != null ? langKvp.Value.ToString() : string.Empty;
+                            }
+                            dict[kvp.Key] = innerDict;
+                        }
+                        offlineDictionary = dict;
+                        Debug.Log($"LanguageManager: Loaded offline dictionary with {offlineDictionary.Count} entries");
+                    }
                 }
                 else
                 {
@@ -152,17 +174,5 @@ namespace ARLinguaSphere.Core
         }
     }
     
-    /// <summary>
-    /// Wrapper class for JSON serialization of dictionary
-    /// </summary>
-    [System.Serializable]
-    public class DictionaryWrapper
-    {
-        public Dictionary<string, Dictionary<string, string>> ToDictionary()
-        {
-            // This is a simplified implementation
-            // In a real implementation, you'd use a proper JSON library like Newtonsoft.Json
-            return new Dictionary<string, Dictionary<string, string>>();
-        }
-    }
+    
 }

@@ -1,144 +1,136 @@
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 using ARLinguaSphere.AR;
+using System.Collections;
 
-namespace Tests.Editor
+namespace ARLinguaSphere.Tests
 {
+    /// <summary>
+    /// Unit tests for ARLabel component
+    /// </summary>
     public class ARLabelTests
     {
+        private GameObject testObject;
         private ARLabel arLabel;
-        private GameObject arLabelObject;
         
         [SetUp]
         public void Setup()
         {
-            arLabelObject = new GameObject("ARLabel");
-            arLabel = arLabelObject.AddComponent<ARLabel>();
+            testObject = new GameObject("TestARLabel");
+            arLabel = testObject.AddComponent<ARLabel>();
         }
         
         [TearDown]
-        public void TearDown()
+        public void Teardown()
         {
-            if (arLabelObject != null)
+            if (testObject != null)
             {
-                Object.DestroyImmediate(arLabelObject);
+                Object.DestroyImmediate(testObject);
             }
         }
         
         [Test]
-        public void ARLabel_InitializesCorrectly()
+        public void ARLabel_Initialize_SetsPropertiesCorrectly()
         {
             // Arrange
-            string testText = "test object";
+            string testText = "Test Label";
             string testLanguage = "en";
             
             // Act
             arLabel.Initialize(testText, testLanguage);
             
             // Assert
-            Assert.AreEqual(testText, arLabel.labelText);
-            Assert.AreEqual(testLanguage, arLabel.originalLanguage);
-            Assert.AreEqual(testText, arLabel.translatedText);
+            Assert.AreEqual(testText, arLabel.GetLabelText());
+            Assert.AreEqual(testText, arLabel.GetOriginalText());
+            Assert.AreEqual(testLanguage, arLabel.GetLanguage());
         }
         
         [Test]
-        public void ARLabel_UpdateText_UpdatesTranslatedText()
+        public void ARLabel_UpdateText_ChangesDisplayedText()
         {
             // Arrange
-            arLabel.Initialize("original", "en");
-            string newText = "new text";
-            
-            // Act
-            arLabel.UpdateText(newText);
-            
-            // Assert
-            Assert.AreEqual(newText, arLabel.translatedText);
-        }
-        
-        [Test]
-        public void ARLabel_UpdateText_WithLanguage_UpdatesBoth()
-        {
-            // Arrange
-            arLabel.Initialize("original", "en");
-            string newText = "nuevo texto";
+            arLabel.Initialize("Original", "en");
+            string newText = "Updated Text";
             string newLanguage = "es";
             
             // Act
             arLabel.UpdateText(newText, newLanguage);
             
             // Assert
-            Assert.AreEqual(newText, arLabel.translatedText);
-            Assert.AreEqual(newLanguage, arLabel.originalLanguage);
+            Assert.AreEqual(newText, arLabel.GetLabelText());
+            Assert.AreEqual(newLanguage, arLabel.GetLanguage());
         }
         
         [Test]
-        public void ARLabel_SetScale_UpdatesScale()
+        public void ARLabel_SetVisible_ChangesVisibility()
         {
             // Arrange
-            arLabel.Initialize("test", "en");
-            float newScale = 2f;
+            arLabel.Initialize("Test", "en");
             
-            // Act
-            arLabel.SetScale(newScale);
-            
-            // Assert
-            Assert.AreEqual(newScale, arLabel.labelScale);
-        }
-        
-        [Test]
-        public void ARLabel_SetVisible_UpdatesVisibility()
-        {
-            // Arrange
-            arLabel.Initialize("test", "en");
-            
-            // Act
+            // Act & Assert
             arLabel.SetVisible(false);
-            
-            // Assert
             Assert.IsFalse(arLabel.IsVisible());
+            Assert.IsFalse(testObject.activeInHierarchy);
+            
+            arLabel.SetVisible(true);
+            Assert.IsTrue(arLabel.IsVisible());
+            Assert.IsTrue(testObject.activeInHierarchy);
         }
         
         [Test]
-        public void ARLabel_GetLabelText_ReturnsTranslatedText()
+        public void ARLabel_SetScale_ChangesTransformScale()
         {
             // Arrange
-            string testText = "test object";
-            arLabel.Initialize(testText, "en");
+            arLabel.Initialize("Test", "en");
+            float testScale = 2.0f;
+            Vector3 originalScale = testObject.transform.localScale;
             
             // Act
-            string result = arLabel.GetLabelText();
+            arLabel.SetScale(testScale);
             
             // Assert
-            Assert.AreEqual(testText, result);
+            Vector3 expectedScale = originalScale * testScale;
+            Assert.AreEqual(expectedScale, testObject.transform.localScale);
         }
         
         [Test]
-        public void ARLabel_GetOriginalText_ReturnsOriginalText()
+        public void ARLabel_EventsTriggeredCorrectly()
         {
             // Arrange
-            string originalText = "original";
-            arLabel.Initialize(originalText, "en");
-            arLabel.UpdateText("translated");
+            bool labelClickedCalled = false;
+            bool labelDestroyedCalled = false;
+            
+            arLabel.Initialize("Test", "en");
+            arLabel.OnLabelClicked += (label) => labelClickedCalled = true;
+            arLabel.OnLabelDestroyed += (label) => labelDestroyedCalled = true;
             
             // Act
-            string result = arLabel.GetOriginalText();
+            arLabel.OnPointerClick();
+            arLabel.DestroyLabel();
             
             // Assert
-            Assert.AreEqual(originalText, result);
+            Assert.IsTrue(labelClickedCalled);
+            Assert.IsTrue(labelDestroyedCalled);
         }
         
-        [Test]
-        public void ARLabel_GetLanguage_ReturnsLanguage()
+        [UnityTest]
+        public IEnumerator ARLabel_AnimationCompletes()
         {
             // Arrange
-            string language = "es";
-            arLabel.Initialize("test", language);
+            arLabel.enableFadeIn = true;
+            arLabel.enableScaleAnimation = true;
+            arLabel.fadeInDuration = 0.1f;
+            arLabel.scaleAnimationDuration = 0.1f;
             
             // Act
-            string result = arLabel.GetLanguage();
+            arLabel.Initialize("Test", "en");
             
-            // Assert
-            Assert.AreEqual(language, result);
+            // Wait for animations to complete
+            yield return new WaitForSeconds(0.2f);
+            
+            // Assert - animations should have completed without errors
+            Assert.IsTrue(arLabel.IsVisible());
         }
     }
 }

@@ -23,6 +23,18 @@ namespace ARLinguaSphere.Analytics
 			}
 			return analyticsManager.GetWordsForQuiz(count);
 		}
+
+		public void RecordAnswer(string wordKey, bool correct, float responseTimeSec = 0f)
+		{
+			if (analyticsManager == null || string.IsNullOrEmpty(wordKey)) return;
+			analyticsManager.LogInteraction(
+				anchorId: wordKey,
+				labelKey: wordKey,
+				action: Analytics.InteractionType.QuizAnswered,
+				success: correct,
+				duration: responseTimeSec
+			);
+		}
 	}
 }
 

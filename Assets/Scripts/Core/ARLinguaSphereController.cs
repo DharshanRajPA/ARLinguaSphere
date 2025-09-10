@@ -312,19 +312,12 @@ namespace ARLinguaSphere.Core
             if (arCamera != null && mlManager != null)
             {
                 // Convert camera frame to texture for ML processing
-                var cameraTexture = GetCameraTexture();
+                var cameraTexture = arManager != null ? arManager.GetLatestCameraTexture() : null;
                 if (cameraTexture != null)
                 {
                     mlManager.ProcessFrame(cameraTexture);
                 }
             }
-        }
-        
-        private Texture2D GetCameraTexture()
-        {
-            // This would get the actual camera texture from AR Foundation
-            // For now, we'll return null as this requires more complex setup
-            return null;
         }
         
         private void OnGestureDetected(GestureType gestureType, Vector2 position)
@@ -355,9 +348,58 @@ namespace ARLinguaSphere.Core
         {
             Debug.Log($"ARLinguaSphereController: Speech recognized: {speechText}");
             
-            if (voiceManager != null)
+            if (voiceManager == null) return;
+            voiceManager.ProcessVoiceCommand(speechText);
+            var cmd = speechText.ToLowerInvariant();
+            if (cmd.Contains("translate to "))
             {
-                voiceManager.ProcessVoiceCommand(speechText);
+                // naive language extraction
+                var parts = cmd.Split(new string[] {"translate to "}, System.StringSplitOptions.None);
+                if (parts.Length > 1)
+                {
+                    string langWord = parts[1].Trim().Split(' ')[0];
+                    // Map a few common language names to codes
+                    string code = MapLanguageToCode(langWord);
+                    if (!string.IsNullOrEmpty(code))
+                    {
+                        languageManager?.SetCurrentLanguage(code);
+                    }
+                }
+            }
+            else if (cmd.Contains("quiz"))
+            {
+                uiManager?.ShowQuizPanel();
+            }
+            else if (cmd.Contains("remove"))
+            {
+                labelManager?.RemoveAllLabels();
+            }
+            else if (cmd.Contains("what is this") || cmd.Contains("identify"))
+            {
+                // Trigger a single detection cycle (already flowing via frames)
+                // Optionally speak last placed label
+                var labels = labelManager?.GetActiveLabels();
+                if (labels != null && labels.Count > 0)
+                {
+                    voiceManager?.Speak(labels[labels.Count - 1].GetLabelText());
+                }
+            }
+        }
+
+        private string MapLanguageToCode(string word)
+        {
+            switch (word)
+            {
+                case "spanish": return "es";
+                case "french": return "fr";
+                case "german": return "de";
+                case "hindi": return "hi";
+                case "japanese": return "ja";
+                case "korean": return "ko";
+                case "chinese": return "zh";
+                case "italian": return "it";
+                case "portuguese": return "pt";
+                default: return null;
             }
         }
         

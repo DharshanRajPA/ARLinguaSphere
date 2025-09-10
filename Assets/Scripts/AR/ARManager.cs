@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 using System.Collections.Generic;
+using Unity.Collections;
 
 namespace ARLinguaSphere.AR
 {
@@ -29,6 +30,8 @@ namespace ARLinguaSphere.AR
         
         private List<ARAnchor> activeAnchors = new List<ARAnchor>();
         private Camera arCamera;
+        private Texture2D cachedCameraTexture;
+        private XRCpuImage.ConversionParams conversionParams;
         
         public bool IsARSessionRunning { get; private set; }
         public Camera ARCamera => arCamera;
@@ -105,6 +108,58 @@ namespace ARLinguaSphere.AR
         {
             // This is where we would process camera frames for ML inference
             // The MLManager will handle the actual processing
+        }
+
+        /// <summary>
+        /// Acquire latest camera CPU image and convert to Texture2D (RGBA32).
+        /// </summary>
+        public Texture2D GetLatestCameraTexture()
+        {
+            if (arCameraManager == null) return null;
+            if (!arCameraManager.TryAcquireLatestCpuImage(out var cpuImage))
+            {
+                return null;
+            }
+
+            using (cpuImage)
+            {
+                // Set up conversion params
+                conversionParams = new XRCpuImage.ConversionParams
+                {
+                    inputRect = new RectInt(0, 0, cpuImage.width, cpuImage.height),
+                    outputDimensions = new Vector2Int(cpuImage.width, cpuImage.height),
+                    outputFormat = TextureFormat.RGBA32,
+                    transformation = XRCpuImage.Transformation.MirrorY
+                };
+
+                int size = cpuImage.GetConvertedDataSize(conversionParams);
+                var buffer = new NativeArray<byte>(size, Allocator.Temp);
+                try
+                {
+                    cpuImage.Convert(conversionParams, buffer);
+
+                    // Create/update texture
+                    if (cachedCameraTexture == null ||
+                        cachedCameraTexture.width != conversionParams.outputDimensions.x ||
+                        cachedCameraTexture.height != conversionParams.outputDimensions.y)
+                    {
+                        cachedCameraTexture = new Texture2D(
+                            conversionParams.outputDimensions.x,
+                            conversionParams.outputDimensions.y,
+                            conversionParams.outputFormat,
+                            false
+                        );
+                    }
+
+                    cachedCameraTexture.LoadRawTextureData(buffer);
+                    cachedCameraTexture.Apply();
+                    return cachedCameraTexture;
+                }
+                finally
+                {
+                    buffer.Dispose();
+                }
+            }
         }
         
         public bool TryPlaceAnchor(Vector2 screenPosition, out ARAnchor anchor)

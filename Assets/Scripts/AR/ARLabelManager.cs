@@ -36,6 +36,7 @@ namespace ARLinguaSphere.AR
         
         private List<ARLabel> activeLabels = new List<ARLabel>();
         private Dictionary<string, ARLabel> objectLabels = new Dictionary<string, ARLabel>();
+        private Dictionary<string, ARLabel> anchorIdToLabel = new Dictionary<string, ARLabel>();
         private float lastPlacementTime = 0f;
         
         // Events
@@ -63,6 +64,12 @@ namespace ARLinguaSphere.AR
             if (languageManager != null)
             {
                 languageManager.OnLanguageChanged += OnLanguageChanged;
+            }
+            
+            // Subscribe to network anchors
+            if (networkManager != null)
+            {
+                networkManager.OnAnchorReceived += OnAnchorReceived;
             }
             
             Debug.Log("ARLabelManager: Initialized");
@@ -235,6 +242,13 @@ namespace ARLinguaSphere.AR
                 objectLabels.Remove(keyToRemove);
             }
             
+            // Remove from anchor map
+            var anchorKey = anchorIdToLabel.FirstOrDefault(x => x.Value == label).Key;
+            if (anchorKey != null)
+            {
+                anchorIdToLabel.Remove(anchorKey);
+            }
+            
             OnLabelRemoved?.Invoke(label);
         }
         
@@ -327,6 +341,55 @@ namespace ARLinguaSphere.AR
             {
                 languageManager.OnLanguageChanged -= OnLanguageChanged;
             }
+            
+            if (networkManager != null)
+            {
+                networkManager.OnAnchorReceived -= OnAnchorReceived;
+            }
+        }
+
+        private void OnAnchorReceived(ARLinguaSphere.Network.AnchorData anchor)
+        {
+            if (anchor == null) return;
+            if (anchorIdToLabel.ContainsKey(anchor.id)) return; // already placed
+            
+            PlaceLabelFromAnchor(anchor);
+        }
+
+        public void PlaceLabelFromAnchor(ARLinguaSphere.Network.AnchorData anchor)
+        {
+            if (anchor == null) return;
+            var detection = new Detection
+            {
+                label = anchor.labelKey,
+                confidence = 1f,
+                boundingBox = new Rect(0.5f, 0.5f, 0.1f, 0.1f)
+            };
+            
+            // Instantiate label
+            if (labelPrefab == null)
+            {
+                Debug.LogWarning("ARLabelManager: Label prefab not assigned");
+                return;
+            }
+            GameObject labelObj = Instantiate(labelPrefab, anchor.position + Vector3.up * labelOffset, anchor.rotation);
+            ARLabel label = labelObj.GetComponent<ARLabel>();
+            if (label == null) label = labelObj.AddComponent<ARLabel>();
+            
+            string translatedText = GetTranslatedText(anchor.labelKey);
+            label.Initialize(translatedText, languageManager?.currentLanguage ?? "en");
+            label.SetScale(labelScale);
+            label.SetColor(labelColor);
+            label.SetBackgroundColor(backgroundColor);
+            label.OnLabelClicked += OnLabelClicked;
+            label.OnLabelDestroyed += OnLabelDestroyed;
+            
+            activeLabels.Add(label);
+            objectLabels[GetObjectKey(detection)] = label;
+            anchorIdToLabel[anchor.id] = label;
+            
+            OnLabelPlaced?.Invoke(label);
+            Debug.Log($"ARLabelManager: Placed network label '{translatedText}' at {anchor.position}");
         }
     }
 }

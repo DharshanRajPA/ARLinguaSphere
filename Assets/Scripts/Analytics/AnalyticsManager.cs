@@ -56,8 +56,42 @@ namespace ARLinguaSphere.Analytics
         
         private void LoadLocalData()
         {
-            // TODO: Load local analytics data from SQLite or JSON
-            Debug.Log("AnalyticsManager: Local data loaded (placeholder)");
+            if (!enableLocalLogging)
+            {
+                return;
+            }
+            try
+            {
+                // Lightweight JSON persistence using PlayerPrefs for demo
+                string json = PlayerPrefs.GetString("ALS_Analytics_Local", string.Empty);
+                if (!string.IsNullOrEmpty(json))
+                {
+                    var parsed = ARLinguaSphere.Core.ThirdParty.MiniJSON.Deserialize(json) as Dictionary<string, object>;
+                    if (parsed != null && parsed.ContainsKey("wordStats"))
+                    {
+                        var statsMap = parsed["wordStats"] as Dictionary<string, object>;
+                        foreach (var kv in statsMap)
+                        {
+                            var m = kv.Value as Dictionary<string, object>;
+                            var ws = new WordStats
+                            {
+                                wordKey = kv.Key,
+                                totalInteractions = m.ContainsKey("totalInteractions") ? System.Convert.ToInt32(m["totalInteractions"]) : 0,
+                                successfulInteractions = m.ContainsKey("successfulInteractions") ? System.Convert.ToInt32(m["successfulInteractions"]) : 0,
+                                averageResponseTime = m.ContainsKey("averageResponseTime") ? System.Convert.ToSingle(m["averageResponseTime"]) : 0f,
+                                difficultyLevel = m.ContainsKey("difficultyLevel") ? System.Convert.ToSingle(m["difficultyLevel"]) : 1f,
+                                lastSeen = m.ContainsKey("lastSeen") ? System.Convert.ToInt64(m["lastSeen"]) : 0
+                            };
+                            wordStatistics[ws.wordKey] = ws;
+                        }
+                    }
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"AnalyticsManager: Failed to load local data: {e.Message}");
+            }
+            Debug.Log("AnalyticsManager: Local data loaded");
         }
         
         public void LogInteraction(string anchorId, string labelKey, InteractionType action, bool success, float duration = 0f)
@@ -189,8 +223,27 @@ namespace ARLinguaSphere.Analytics
             {
                 return;
             }
-            
-            // TODO: Save to SQLite or JSON file
+            try
+            {
+                // Persist word stats only (compact)
+                var root = new System.Text.StringBuilder();
+                root.Append("{\"wordStats\":{");
+                bool first = true;
+                foreach (var kv in wordStatistics)
+                {
+                    if (!first) root.Append(",");
+                    first = false;
+                    var ws = kv.Value;
+                    root.Append($"\"{ws.wordKey}\":{{\"totalInteractions\":{ws.totalInteractions},\"successfulInteractions\":{ws.successfulInteractions},\"averageResponseTime\":{ws.averageResponseTime},\"difficultyLevel\":{ws.difficultyLevel},\"lastSeen\":{ws.lastSeen}}}");
+                }
+                root.Append("}}");
+                PlayerPrefs.SetString("ALS_Analytics_Local", root.ToString());
+                PlayerPrefs.Save();
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"AnalyticsManager: Failed to save local data: {e.Message}");
+            }
             Debug.Log("AnalyticsManager: Session data saved");
         }
         

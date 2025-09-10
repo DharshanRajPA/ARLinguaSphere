@@ -111,6 +111,12 @@ Camera Frame → MLManager → Detection[] → ARManager → Anchor Placement �
 Object Label → LanguageManager → Offline Lookup → Online Fallback → UI Display
 ```
 
+#### Offline Dictionary
+- Location: `Assets/Resources/offline_dictionary.json`
+- Load: `Resources.Load<TextAsset>("offline_dictionary")`
+- Format: `{ "label_key": { "en": "...", "es": "...", ... }, ... }`
+- Behavior: `LanguageManager` loads the file at initialization and serves translations instantly (<100ms). If not found and `enableOnlineTranslation` is true, an online provider can be queried.
+
 ### Multi-user Sync Pipeline
 ```
 Local Anchor → NetworkManager → Firebase → Other Devices → ARManager → UI Update
