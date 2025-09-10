@@ -67,7 +67,6 @@ namespace ARLinguaSphere.UI
             
             // Set initial state
             SetInitialUIState();
-            
             isInitialized = true;
             Debug.Log("UIManager: UI systems initialized!");
         }
@@ -252,6 +251,20 @@ namespace ARLinguaSphere.UI
         {
             if (quizScoreText != null)
                 quizScoreText.text = $"Score: {currentQuizScore}/{totalQuizQuestions}";
+        }
+        
+        public bool IsUIManagerInitialized()
+        {
+            return isInitialized;
+        }
+        
+        private void Update()
+        {
+            // Only update UI if properly initialized
+            if (isInitialized)
+            {
+                // UI update logic can be added here
+            }
         }
         
         public void OnQuizAnswerCorrect()

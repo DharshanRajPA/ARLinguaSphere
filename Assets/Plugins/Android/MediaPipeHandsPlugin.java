@@ -1,37 +1,18 @@
 package com.arlinguasphere;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.util.Log;
-
-import com.google.mediapipe.components.FrameProcessor;
-import com.google.mediapipe.framework.AndroidAssetUtil;
-import com.google.mediapipe.framework.AndroidPacketCreator;
-import com.google.mediapipe.framework.Packet;
-import com.google.mediapipe.framework.PacketGetter;
-import com.google.mediapipe.glutil.EglManager;
-
 import com.unity3d.player.UnityPlayer;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Random;
 
 /**
- * MediaPipe Hands plugin for Unity
- * Provides real-time hand landmark detection using MediaPipe
+ * Mock MediaPipe Hands plugin for Unity
+ * Provides simulated hand landmark detection for testing without MediaPipe dependencies
  */
 public class MediaPipeHandsPlugin {
     private static final String TAG = "MediaPipeHandsPlugin";
-    private static final String BINARY_GRAPH_NAME = "hand_landmark_tracking_mobile_gpu.binarypb";
-    private static final String INPUT_VIDEO_STREAM_NAME = "input_video";
-    private static final String OUTPUT_LANDMARKS_STREAM_NAME = "hand_landmarks";
     
     private Context context;
-    private FrameProcessor processor;
-    private EglManager eglManager;
-    private AndroidPacketCreator packetCreator;
     private String unityCallbackObject;
     
     private boolean initialized = false;
@@ -40,8 +21,12 @@ public class MediaPipeHandsPlugin {
     private float minDetectionConfidence = 0.5f;
     private float minTrackingConfidence = 0.5f;
     
+    private Random random = new Random();
+    private long lastDetectionTime = 0;
+    private static final long DETECTION_INTERVAL = 2000; // 2 seconds
+    
     /**
-     * Initialize the MediaPipe Hands pipeline
+     * Initialize the mock MediaPipe Hands pipeline
      */
     public boolean initialize(Context context, int maxHands, boolean useGPU, 
                             float minDetectionConfidence, float minTrackingConfidence) {
@@ -52,75 +37,36 @@ public class MediaPipeHandsPlugin {
             this.minDetectionConfidence = minDetectionConfidence;
             this.minTrackingConfidence = minTrackingConfidence;
             
-            // Initialize MediaPipe
-            AndroidAssetUtil.initializeNativeAssetManager(context);
-            
-            // Initialize EGL context for GPU processing
-            if (useGPU) {
-                eglManager = new EglManager(null);
-            }
-            
-            // Create packet creator
-            packetCreator = new AndroidPacketCreator();
-            
-            // Initialize frame processor
-            processor = new FrameProcessor(
-                context,
-                useGPU ? eglManager.getNativeContext() : 0,
-                BINARY_GRAPH_NAME,
-                INPUT_VIDEO_STREAM_NAME,
-                OUTPUT_LANDMARKS_STREAM_NAME
-            );
-            
-            // Set up graph options
-            Map<String, Packet> inputSidePackets = new HashMap<>();
-            inputSidePackets.put("num_hands", packetCreator.createInt32(maxHands));
-            inputSidePackets.put("min_detection_confidence", packetCreator.createFloat32(minDetectionConfidence));
-            inputSidePackets.put("min_tracking_confidence", packetCreator.createFloat32(minTrackingConfidence));
-            
-            processor.setInputSidePackets(inputSidePackets);
-            
-            // Set up output packet callback
-            processor.addPacketCallback(OUTPUT_LANDMARKS_STREAM_NAME, this::onHandLandmarks);
-            
-            // Start the processor
-            processor.startCamera();
-            
             initialized = true;
-            Log.d(TAG, "MediaPipe Hands initialized successfully");
+            Log.d(TAG, "Mock MediaPipe Hands initialized successfully");
             return true;
             
         } catch (Exception e) {
-            Log.e(TAG, "Failed to initialize MediaPipe Hands", e);
+            Log.e(TAG, "Failed to initialize Mock MediaPipe Hands", e);
             return false;
         }
     }
     
     /**
-     * Process a camera frame for hand detection
+     * Process a camera frame for hand detection (mock implementation)
      */
     public void processFrame(byte[] imageBytes, int width, int height) {
-        if (!initialized || processor == null) {
-            Log.w(TAG, "MediaPipe not initialized");
+        if (!initialized) {
+            Log.w(TAG, "Mock MediaPipe not initialized");
             return;
         }
         
         try {
-            // Convert byte array to Bitmap
-            Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
-            if (bitmap == null) {
-                Log.e(TAG, "Failed to decode image bytes");
-                return;
+            // Simulate processing delay
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastDetectionTime < DETECTION_INTERVAL) {
+                return; // Skip this frame
             }
             
-            // Resize bitmap if necessary
-            if (bitmap.getWidth() != width || bitmap.getHeight() != height) {
-                bitmap = Bitmap.createScaledBitmap(bitmap, width, height, true);
-            }
+            lastDetectionTime = currentTime;
             
-            // Send frame to MediaPipe
-            long timestamp = System.currentTimeMillis() * 1000; // Convert to microseconds
-            processor.onNewFrame(bitmap, timestamp);
+            // Generate mock hand landmarks
+            generateMockHandLandmarks();
             
         } catch (Exception e) {
             Log.e(TAG, "Error processing frame", e);
@@ -128,53 +74,36 @@ public class MediaPipeHandsPlugin {
     }
     
     /**
-     * Callback for receiving hand landmarks from MediaPipe
+     * Generate mock hand landmarks for testing
      */
-    private void onHandLandmarks(Packet packet) {
+    private void generateMockHandLandmarks() {
         try {
-            List<com.google.mediapipe.formats.proto.LandmarkProto.NormalizedLandmarkList> handLandmarkLists =
-                PacketGetter.getProtoVector(packet, com.google.mediapipe.formats.proto.LandmarkProto.NormalizedLandmarkList.parser());
+            // Generate 21 hand landmarks (MediaPipe standard)
+            HandLandmarksData landmarksData = new HandLandmarksData();
+            landmarksData.keypoints = new float[21 * 3]; // 21 landmarks, 3 coordinates each
+            landmarksData.confidence = 0.8f + random.nextFloat() * 0.2f; // 0.8-1.0
+            landmarksData.isRight = random.nextBoolean();
             
-            if (handLandmarkLists.isEmpty()) {
-                return;
+            // Generate realistic hand landmark positions
+            for (int i = 0; i < 21; i++) {
+                int baseIndex = i * 3;
+                
+                // Generate normalized coordinates (0-1 range)
+                landmarksData.keypoints[baseIndex] = 0.3f + random.nextFloat() * 0.4f; // x
+                landmarksData.keypoints[baseIndex + 1] = 0.3f + random.nextFloat() * 0.4f; // y
+                landmarksData.keypoints[baseIndex + 2] = random.nextFloat() * 0.1f; // z (depth)
             }
             
-            // Process each detected hand
-            for (com.google.mediapipe.formats.proto.LandmarkProto.NormalizedLandmarkList landmarks : handLandmarkLists) {
-                HandLandmarksData landmarksData = convertToHandLandmarksData(landmarks);
-                String json = convertToJson(landmarksData);
-                
-                // Send landmarks to Unity
-                if (unityCallbackObject != null) {
-                    UnityPlayer.UnitySendMessage(unityCallbackObject, "OnHandLandmarksReceived", json);
-                }
+            String json = convertToJson(landmarksData);
+            
+            // Send landmarks to Unity
+            if (unityCallbackObject != null) {
+                UnityPlayer.UnitySendMessage(unityCallbackObject, "OnHandLandmarksReceived", json);
             }
             
         } catch (Exception e) {
-            Log.e(TAG, "Error processing hand landmarks", e);
+            Log.e(TAG, "Error generating mock hand landmarks", e);
         }
-    }
-    
-    /**
-     * Convert MediaPipe landmarks to our data structure
-     */
-    private HandLandmarksData convertToHandLandmarksData(
-        com.google.mediapipe.formats.proto.LandmarkProto.NormalizedLandmarkList landmarks) {
-        
-        HandLandmarksData data = new HandLandmarksData();
-        data.keypoints = new float[landmarks.getLandmarkCount() * 3]; // x, y, z for each landmark
-        data.confidence = 0.8f; // Default confidence
-        data.isRight = true; // Default to right hand
-        
-        for (int i = 0; i < landmarks.getLandmarkCount(); i++) {
-            com.google.mediapipe.formats.proto.LandmarkProto.NormalizedLandmark landmark = landmarks.getLandmark(i);
-            int baseIndex = i * 3;
-            data.keypoints[baseIndex] = landmark.getX();
-            data.keypoints[baseIndex + 1] = landmark.getY();
-            data.keypoints[baseIndex + 2] = landmark.getZ();
-        }
-        
-        return data;
     }
     
     /**
@@ -214,12 +143,7 @@ public class MediaPipeHandsPlugin {
      */
     public void setDetectionConfidence(float confidence) {
         this.minDetectionConfidence = confidence;
-        // Update graph if running
-        if (initialized && processor != null) {
-            Map<String, Packet> inputSidePackets = new HashMap<>();
-            inputSidePackets.put("min_detection_confidence", packetCreator.createFloat32(confidence));
-            processor.setInputSidePackets(inputSidePackets);
-        }
+        Log.d(TAG, "Detection confidence set to: " + confidence);
     }
     
     /**
@@ -227,12 +151,7 @@ public class MediaPipeHandsPlugin {
      */
     public void setTrackingConfidence(float confidence) {
         this.minTrackingConfidence = confidence;
-        // Update graph if running
-        if (initialized && processor != null) {
-            Map<String, Packet> inputSidePackets = new HashMap<>();
-            inputSidePackets.put("min_tracking_confidence", packetCreator.createFloat32(confidence));
-            processor.setInputSidePackets(inputSidePackets);
-        }
+        Log.d(TAG, "Tracking confidence set to: " + confidence);
     }
     
     /**
@@ -240,12 +159,7 @@ public class MediaPipeHandsPlugin {
      */
     public void setMaxHands(int maxHands) {
         this.maxHands = maxHands;
-        // Update graph if running
-        if (initialized && processor != null) {
-            Map<String, Packet> inputSidePackets = new HashMap<>();
-            inputSidePackets.put("num_hands", packetCreator.createInt32(maxHands));
-            processor.setInputSidePackets(inputSidePackets);
-        }
+        Log.d(TAG, "Max hands set to: " + maxHands);
     }
     
     /**
@@ -253,23 +167,8 @@ public class MediaPipeHandsPlugin {
      */
     public void cleanup() {
         try {
-            if (processor != null) {
-                processor.close();
-                processor = null;
-            }
-            
-            if (eglManager != null) {
-                eglManager.release();
-                eglManager = null;
-            }
-            
-            if (packetCreator != null) {
-                packetCreator.release();
-                packetCreator = null;
-            }
-            
             initialized = false;
-            Log.d(TAG, "MediaPipe Hands cleaned up");
+            Log.d(TAG, "Mock MediaPipe Hands cleaned up");
             
         } catch (Exception e) {
             Log.e(TAG, "Error during cleanup", e);

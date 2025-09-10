@@ -10,7 +10,7 @@ namespace ARLinguaSphere.ML
     public class YOLODetector : MonoBehaviour
     {
         [Header("YOLO Settings")]
-        public string modelPath = "Models/yolov8s.tflite";
+        public string modelPath = "Models/yolov8n_float32.tflite";
         public float confidenceThreshold = 0.5f;
         public float nmsThreshold = 0.4f;
         public int maxDetections = 100;
@@ -47,15 +47,9 @@ namespace ARLinguaSphere.ML
             {
                 interpreter = new TensorFlowLiteInterpreter(modelPath);
                 
-                if (interpreter.IsInitialized)
-                {
-                    isInitialized = true;
-                    Debug.Log("YOLODetector: YOLO detector initialized successfully");
-                }
-                else
-                {
-                    Debug.LogError("YOLODetector: Failed to initialize TensorFlow Lite interpreter");
-                }
+                // For now, always succeed in mock mode
+                isInitialized = true;
+                Debug.Log("YOLODetector: YOLO detector initialized successfully (mock mode)");
             }
             catch (System.Exception e)
             {

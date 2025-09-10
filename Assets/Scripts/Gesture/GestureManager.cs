@@ -32,7 +32,7 @@ namespace ARLinguaSphere.Gesture
         
         // Events
         public event Action<GestureType, Vector2> OnGestureDetected;
-        public event Action<GestureType, float> OnGestureHeld;
+        // Note: OnGestureHeld event is reserved for future gesture hold functionality
         
         public void Initialize()
         {

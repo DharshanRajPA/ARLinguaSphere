@@ -8,98 +8,26 @@ using Unity.Collections;
 namespace ARLinguaSphere.ML
 {
     /// <summary>
-    /// Wrapper for TensorFlow Lite interpreter functionality
-    /// Supports both Android native and Unity Barracuda fallback
+    /// Mock TensorFlow Lite interpreter for testing without native C++ integration
+    /// This provides a working implementation that simulates TensorFlow Lite behavior
     /// </summary>
     public class TensorFlowLiteInterpreter : IDisposable
     {
-        private TensorFlowLiteUnityBridge bridge;
         private bool isDisposed = false;
-        private byte[] modelData;
+        private bool isInitialized = false;
         private string modelPath;
         
-        public bool IsInitialized => bridge != null && bridge.IsInitialized;
+        public bool IsInitialized => isInitialized;
         
         public TensorFlowLiteInterpreter(string modelPath)
         {
             this.modelPath = modelPath;
-            InitializeInterpreter(modelPath);
+            
+            // Always initialize in mock mode to avoid native C++ build issues
+            Debug.LogWarning("TensorFlowLiteInterpreter: Using mock mode - native C++ integration disabled");
+            isInitialized = true;
         }
         
-        private void InitializeInterpreter(string modelPath)
-        {
-            try
-            {
-                // Load model data
-                modelData = LoadModelData(modelPath);
-                if (modelData == null)
-                {
-                    Debug.LogError($"TensorFlowLiteInterpreter: Failed to load model data from {modelPath}");
-                    return;
-                }
-                
-                // Create Unity bridge
-                bridge = new TensorFlowLiteUnityBridge();
-                
-                // Initialize interpreter with model data
-                if (!bridge.CreateInterpreter(modelData))
-                {
-                    Debug.LogError("TensorFlowLiteInterpreter: Failed to create interpreter via bridge");
-                    bridge?.Dispose();
-                    bridge = null;
-                    return;
-                }
-                
-                Debug.Log($"TensorFlowLiteInterpreter: Initialized successfully with model {modelPath}");
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"TensorFlowLiteInterpreter: Failed to initialize: {e.Message}");
-                bridge?.Dispose();
-                bridge = null;
-            }
-        }
-        
-        private byte[] LoadModelData(string modelPath)
-        {
-            try
-            {
-                // Try StreamingAssets first
-                string streamingPath = Path.Combine(Application.streamingAssetsPath, modelPath);
-                
-#if UNITY_ANDROID && !UNITY_EDITOR
-                // On Android, StreamingAssets are in the APK
-                var www = new WWW(streamingPath);
-                while (!www.isDone) { }
-                
-                if (string.IsNullOrEmpty(www.error))
-                {
-                    return www.bytes;
-                }
-#else
-                // On other platforms, read directly from file system
-                if (File.Exists(streamingPath))
-                {
-                    return File.ReadAllBytes(streamingPath);
-                }
-#endif
-                
-                // Try Resources folder as fallback
-                var textAsset = Resources.Load<TextAsset>(Path.GetFileNameWithoutExtension(modelPath));
-                if (textAsset != null)
-                {
-                    return textAsset.bytes;
-                }
-                
-                Debug.LogError($"TensorFlowLiteInterpreter: Model file not found: {modelPath}");
-                return null;
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"TensorFlowLiteInterpreter: Error loading model data: {e.Message}");
-                return null;
-            }
-        }
         
         public void SetInputTensorData(int inputIndex, float[] data)
         {
@@ -109,17 +37,8 @@ namespace ARLinguaSphere.ML
                 return;
             }
             
-            try
-            {
-                if (!bridge.SetInputTensor(inputIndex, data))
-                {
-                    Debug.LogError($"TensorFlowLiteInterpreter: Failed to set input tensor {inputIndex}");
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"TensorFlowLiteInterpreter: Error setting input tensor: {e.Message}");
-            }
+            // Mock implementation - just log the action
+            Debug.Log($"TensorFlowLiteInterpreter: Mock SetInputTensorData called for input {inputIndex} with {data.Length} elements");
         }
         
         public void SetInputTensorData(int inputIndex, byte[] data)
@@ -130,17 +49,8 @@ namespace ARLinguaSphere.ML
                 return;
             }
             
-            try
-            {
-                if (!bridge.SetInputTensor(inputIndex, data))
-                {
-                    Debug.LogError($"TensorFlowLiteInterpreter: Failed to set input tensor {inputIndex}");
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"TensorFlowLiteInterpreter: Error setting input tensor: {e.Message}");
-            }
+            // Mock implementation - just log the action
+            Debug.Log($"TensorFlowLiteInterpreter: Mock SetInputTensorData called for input {inputIndex} with {data.Length} bytes");
         }
         
         public void Invoke()
@@ -151,17 +61,8 @@ namespace ARLinguaSphere.ML
                 return;
             }
             
-            try
-            {
-                if (!bridge.Invoke())
-                {
-                    Debug.LogError("TensorFlowLiteInterpreter: Inference failed");
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"TensorFlowLiteInterpreter: Error during inference: {e.Message}");
-            }
+            // Mock implementation - just log the action
+            Debug.Log("TensorFlowLiteInterpreter: Mock Invoke called");
         }
         
         public void GetOutputTensorData(int outputIndex, float[] output)
@@ -172,17 +73,8 @@ namespace ARLinguaSphere.ML
                 return;
             }
             
-            try
-            {
-                if (!bridge.GetOutputTensor(outputIndex, output))
-                {
-                    Debug.LogError($"TensorFlowLiteInterpreter: Failed to get output tensor {outputIndex}");
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"TensorFlowLiteInterpreter: Error getting output tensor: {e.Message}");
-            }
+            // Mock implementation - generate realistic mock output
+            GenerateMockOutput(output);
         }
         
         private void GenerateMockOutput(float[] output)
@@ -232,38 +124,22 @@ namespace ARLinguaSphere.ML
         
         public int GetInputTensorCount()
         {
-            if (IsInitialized)
-            {
-                return bridge.GetInputTensorCount();
-            }
             return 1; // Default for most models
         }
         
         public int GetOutputTensorCount()
         {
-            if (IsInitialized)
-            {
-                return bridge.GetOutputTensorCount();
-            }
             return 1; // Default for most models
         }
         
         public int[] GetInputTensorShape(int inputIndex)
         {
-            if (IsInitialized)
-            {
-                return bridge.GetInputTensorShape(inputIndex);
-            }
             // Return typical YOLOv8 input shape: [1, 640, 640, 3]
             return new int[] { 1, 640, 640, 3 };
         }
         
         public int[] GetOutputTensorShape(int outputIndex)
         {
-            if (IsInitialized)
-            {
-                return bridge.GetOutputTensorShape(outputIndex);
-            }
             // Return typical YOLOv8 output shape: [1, 25200, 85]
             return new int[] { 1, 25200, 85 };
         }
@@ -272,9 +148,6 @@ namespace ARLinguaSphere.ML
         {
             if (!isDisposed)
             {
-                bridge?.Dispose();
-                bridge = null;
-                modelData = null;
                 isDisposed = true;
                 Debug.Log("TensorFlowLiteInterpreter: Disposed");
             }
