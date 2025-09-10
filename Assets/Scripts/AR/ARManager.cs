@@ -13,7 +13,7 @@ namespace ARLinguaSphere.AR
     {
         [Header("AR Components")]
         public ARSession arSession;
-        public ARSessionOrigin arSessionOrigin;
+        public ARSessionOrigin arSessionOrigin; // Unity 6 warns: prefer XROrigin; keep for now
         public ARCameraManager arCameraManager;
         public ARPlaneManager arPlaneManager;
         public ARRaycastManager arRaycastManager;
@@ -43,8 +43,7 @@ namespace ARLinguaSphere.AR
             // Get AR camera reference
             arCamera = arSessionOrigin.camera;
             
-            // Configure AR session
-            ConfigureARSession();
+            // (Unity 6) Skip session configuration via subsystem.GetConfiguration (removed)
             
             // Subscribe to AR events
             SubscribeToAREvents();
@@ -52,30 +51,12 @@ namespace ARLinguaSphere.AR
             Debug.Log("ARManager: AR systems initialized!");
         }
         
-        private void ConfigureARSession()
-        {
-            if (arSession == null)
-            {
-                Debug.LogError("ARManager: ARSession is not assigned!");
-                return;
-            }
-            
-            // Configure AR session settings
-            var sessionConfig = arSession.subsystem?.GetConfiguration();
-            if (sessionConfig.HasValue)
-            {
-                // Enable/disable features based on settings
-                // Note: This is a simplified configuration
-                Debug.Log("ARManager: AR session configured");
-            }
-        }
+        // (Unity 6) Removed ConfigureARSession() body; AR Foundation handles configuration internally
         
         private void SubscribeToAREvents()
         {
-            if (arSession != null)
-            {
-                arSession.stateChanged += OnARSessionStateChanged;
-            }
+            // (Unity 6) subscribe to static ARSession.stateChanged
+            ARSession.stateChanged += OnARSessionStateChanged;
             
             if (arCameraManager != null)
             {
@@ -87,20 +68,14 @@ namespace ARLinguaSphere.AR
         {
             Debug.Log($"ARManager: AR Session state changed to {args.state}");
             
-            switch (args.state)
+            if (args.state == ARSessionState.SessionTracking)
             {
-                case ARSessionState.SessionTracking:
-                    IsARSessionRunning = true;
-                    Debug.Log("ARManager: AR session is now tracking!");
-                    break;
-                case ARSessionState.SessionNotTracking:
-                    IsARSessionRunning = false;
-                    Debug.Log("ARManager: AR session lost tracking");
-                    break;
-                case ARSessionState.SessionPaused:
-                    IsARSessionRunning = false;
-                    Debug.Log("ARManager: AR session paused");
-                    break;
+                IsARSessionRunning = true;
+                Debug.Log("ARManager: AR session is now tracking!");
+            }
+            else
+            {
+                IsARSessionRunning = false;
             }
         }
         
@@ -175,14 +150,18 @@ namespace ARLinguaSphere.AR
             List<ARRaycastHit> hits = new List<ARRaycastHit>();
             if (arRaycastManager.Raycast(screenPosition, hits, TrackableType.PlaneWithinPolygon))
             {
-                var hitPose = hits[0].pose;
-                anchor = arAnchorManager.AddAnchor(hitPose);
-                
-                if (anchor != null)
+                var hit = hits[0];
+                var plane = arPlaneManager != null ? arPlaneManager.GetPlane(hit.trackableId) : null;
+                if (plane != null)
                 {
-                    activeAnchors.Add(anchor);
-                    Debug.Log($"ARManager: Anchor placed at {hitPose.position}");
-                    return true;
+                    var anchorAttached = arAnchorManager.AttachAnchor(plane, hit.pose);
+                    if (anchorAttached != null)
+                    {
+                        anchor = anchorAttached;
+                        activeAnchors.Add(anchor);
+                        Debug.Log($"ARManager: Anchor placed at {hit.pose.position}");
+                        return true;
+                    }
                 }
             }
             
@@ -195,7 +174,7 @@ namespace ARLinguaSphere.AR
             if (anchor != null && activeAnchors.Contains(anchor))
             {
                 activeAnchors.Remove(anchor);
-                arAnchorManager.RemoveAnchor(anchor);
+                Destroy(anchor);
                 Debug.Log("ARManager: Anchor removed");
             }
         }
@@ -204,10 +183,7 @@ namespace ARLinguaSphere.AR
         {
             foreach (var anchor in activeAnchors)
             {
-                if (anchor != null)
-                {
-                    arAnchorManager.RemoveAnchor(anchor);
-                }
+                if (anchor != null) Destroy(anchor);
             }
             activeAnchors.Clear();
             Debug.Log("ARManager: All anchors cleared");
@@ -224,10 +200,7 @@ namespace ARLinguaSphere.AR
         private void OnDestroy()
         {
             // Unsubscribe from events
-            if (arSession != null)
-            {
-                arSession.stateChanged -= OnARSessionStateChanged;
-            }
+            ARSession.stateChanged -= OnARSessionStateChanged;
             
             if (arCameraManager != null)
             {

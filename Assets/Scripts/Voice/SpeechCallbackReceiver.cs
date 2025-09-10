@@ -11,22 +11,22 @@ namespace ARLinguaSphere.Voice
 
 		public void OnSpeechBegin(string _)
 		{
-			voiceManager?.OnSpeechStarted?.Invoke();
+			voiceManager?.NotifySpeechStarted();
 		}
 
 		public void OnSpeechEnd(string _)
 		{
-			voiceManager?.OnSpeechEnded?.Invoke();
+			voiceManager?.NotifySpeechEnded();
 		}
 
 		public void OnSpeechError(string errorCode)
 		{
-			voiceManager?.OnSpeechError?.Invoke(errorCode);
+			voiceManager?.NotifySpeechError(errorCode);
 		}
 
 		public void OnSpeechResult(string text)
 		{
-			voiceManager?.OnSpeechRecognized?.Invoke(text);
+			voiceManager?.NotifySpeechRecognized(text);
 		}
 
 		public void OnSpeechPartial(string text)
@@ -36,12 +36,12 @@ namespace ARLinguaSphere.Voice
 
 		public void OnTTSStart(string _)
 		{
-			voiceManager?.OnTTSStarted?.Invoke();
+			voiceManager?.NotifyTTSStarted();
 		}
 
 		public void OnTTSEnd(string _)
 		{
-			voiceManager?.OnTTSEnded?.Invoke();
+			voiceManager?.NotifyTTSEnded();
 		}
 	}
 }

@@ -48,6 +48,14 @@ namespace ARLinguaSphere.Voice
             isInitialized = true;
             Debug.Log("VoiceManager: Voice systems initialized!");
         }
+
+        // Notify helpers for external callbacks (Unity 6 event restrictions)
+        public void NotifySpeechStarted() => OnSpeechStarted?.Invoke();
+        public void NotifySpeechEnded() => OnSpeechEnded?.Invoke();
+        public void NotifySpeechError(string error) => OnSpeechError?.Invoke(error);
+        public void NotifySpeechRecognized(string text) => OnSpeechRecognized?.Invoke(text);
+        public void NotifyTTSStarted() => OnTTSStarted?.Invoke();
+        public void NotifyTTSEnded() => OnTTSEnded?.Invoke();
         
         private void InitializeAndroidSpeechRecognition()
         {
